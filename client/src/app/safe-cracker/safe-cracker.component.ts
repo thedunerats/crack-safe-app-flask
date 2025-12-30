@@ -80,4 +80,27 @@ export class SafeCrackerComponent {
     this.currentAttempts = 0;
     this.currentProgress = null;
   }
+
+  generateRandom(): void {
+    const random = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+    this.safeCrackerForm.controls['combination'].setValue(random);
+  }
+
+  useExample(example: string): void {
+    this.safeCrackerForm.controls['combination'].setValue(example);
+  }
+
+  getBruteForceAttempts(): number {
+    return 10000000000; // 10 billion for 10-digit combination
+  }
+
+  getEfficiencyPercentage(): number {
+    if (!this.result) return 0;
+    return ((this.result.attempts / this.getBruteForceAttempts()) * 100);
+  }
+
+  getTimesSaved(): number {
+    if (!this.result) return 0;
+    return Math.floor(this.getBruteForceAttempts() / this.result.attempts);
+  }
 }

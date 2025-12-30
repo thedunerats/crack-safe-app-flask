@@ -1,7 +1,20 @@
 <div class="safe-cracker-container">
   <div class="card">
     <h1 class="title">🔓 Safe Cracker</h1>
-    <p class="subtitle">Enter a 10-digit combination to crack the safe</p>
+    <p class="subtitle">Enter a 10-digit combination to crack the safe using our intelligent algorithm</p>
+
+    <!-- Quick Action Buttons -->
+    <div class="quick-actions">
+      <button type="button" class="btn-quick" (click)="useExample('1234567890')" title="Try this example">
+        ✨ Example: 1234567890
+      </button>
+      <button type="button" class="btn-quick" (click)="useExample('0000000000')" title="Try all zeros">
+        🎯 Try: 0000000000
+      </button>
+      <button type="button" class="btn-quick" (click)="generateRandom()" title="Generate random combination">
+        🎲 Random
+      </button>
+    </div>
 
     <form [formGroup]="safeCrackerForm" (ngSubmit)="onSubmit()" class="form">
       <div class="form-group">
@@ -13,7 +26,7 @@
           type="text"
           formControlName="combination"
           class="form-input"
-          placeholder="Enter 10-digit combination (e.g., 0123456789)"
+          placeholder="e.g., 1234567890 or try Random 🎲"
           maxlength="10"
           [class.invalid]="combination?.invalid && combination?.touched"
         />
@@ -110,29 +123,58 @@
 
     <!-- Results Display -->
     <div class="results-card" *ngIf="result">
-      <h2 class="results-title">✅ Safe Cracked Successfully!</h2>
+      <div class="success-header">
+        <h2 class="results-title animate-success">✅ Safe Cracked Successfully!</h2>
+        <div class="celebration">🎉 🎊 🎉</div>
+      </div>
       
       <div class="results-grid">
         <div class="result-item">
           <div class="result-label">Total Attempts</div>
-          <div class="result-value">{{ result.attempts }}</div>
+          <div class="result-value animate-count">{{ result.attempts }}</div>
+          <div class="result-sublabel">attempts needed</div>
         </div>
         
         <div class="result-item">
           <div class="result-label">Time Taken</div>
-          <div class="result-value">{{ result.time_taken }} ms</div>
+          <div class="result-value animate-count">{{ result.time_taken }}</div>
+          <div class="result-sublabel">milliseconds</div>
+        </div>
+      </div>
+
+      <!-- Efficiency Comparison -->
+      <div class="efficiency-card">
+        <h3 class="efficiency-title">⚡ Algorithm Efficiency</h3>
+        <div class="efficiency-stats">
+          <div class="efficiency-item">
+            <span class="efficiency-label">Brute Force Would Take:</span>
+            <span class="efficiency-value">{{ getBruteForceAttempts().toLocaleString() }} attempts</span>
+          </div>
+          <div class="efficiency-item">
+            <span class="efficiency-label">Our Algorithm Used:</span>
+            <span class="efficiency-value highlight">{{ result.attempts }} attempts</span>
+          </div>
+          <div class="efficiency-item">
+            <span class="efficiency-label">Efficiency:</span>
+            <span class="efficiency-value success">{{ getEfficiencyPercentage().toFixed(6) }}% of brute force</span>
+          </div>
+          <div class="efficiency-item">
+            <span class="efficiency-label">Speed Improvement:</span>
+            <span class="efficiency-value success">{{ getTimesSaved().toLocaleString() }}x faster! 🚀</span>
+          </div>
         </div>
       </div>
 
       <div class="results-info">
         <p>
-          <strong>Efficiency:</strong> The algorithm cracked your safe in 
+          <strong>Amazing!</strong> The intelligent digit-by-digit algorithm cracked your safe in 
           <strong>{{ result.attempts }}</strong> attempts in just 
           <strong>{{ result.time_taken }}</strong> milliseconds!
         </p>
         <p class="info-text">
-          💡 Our intelligent digit-by-digit algorithm is significantly faster 
-          than brute force, which would take up to 10 billion attempts!
+          💡 This approach is <strong>{{ getTimesSaved().toLocaleString() }} times faster</strong> 
+          than brute force, which would require checking up to 
+          <strong>{{ getBruteForceAttempts().toLocaleString() }}</strong> combinations!
         </p>
       </div>
     </div>
