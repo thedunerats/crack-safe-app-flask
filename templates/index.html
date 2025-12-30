@@ -253,10 +253,10 @@
             </div>
 
             <div class="combination-input">
-                <input type="number" class="digit-input" id="digit0" min="0" max="9" maxlength="1">
-                <input type="number" class="digit-input" id="digit1" min="0" max="9" maxlength="1">
-                <input type="number" class="digit-input" id="digit2" min="0" max="9" maxlength="1">
-                <input type="number" class="digit-input" id="digit3" min="0" max="9" maxlength="1">
+                <input type="number" class="digit-input" id="digit0" min="0" max="9">
+                <input type="number" class="digit-input" id="digit1" min="0" max="9">
+                <input type="number" class="digit-input" id="digit2" min="0" max="9">
+                <input type="number" class="digit-input" id="digit3" min="0" max="9">
             </div>
 
             <div class="buttons">
@@ -481,7 +481,7 @@
                     updateGameState({
                         is_locked: true,
                         attempts_remaining: data.attempts_remaining,
-                        max_attempts: data.attempts_remaining
+                        max_attempts: gameState.maxAttempts
                     });
                     
                     clearInputs();
