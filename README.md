@@ -36,6 +36,7 @@ crack-safe-app-flask/
 - **Angular Frontend**: Modern, responsive UI with form validation
 - **Real-time Results**: Displays cracking attempts and time taken
 - **CORS Enabled**: Frontend and backend communicate seamlessly
+- **API Authentication**: Secure API key authentication to protect endpoints
 
 ## Installation
 
@@ -65,15 +66,31 @@ crack-safe-app-flask/
      source venv/bin/activate
      ```
 
-4. **Install dependencies** (including flask-cors):
+4. **Install dependencies** (including flask-cors and python-dotenv):
    ```bash
    pip install -r requirements.txt
    ```
    
-   **Important:** Make sure flask-cors installs successfully. If you get errors, try:
+   **Important:** Make sure flask-cors and python-dotenv install successfully. If you get errors, try:
    ```bash
    pip install --upgrade pip
    pip install -r requirements.txt
+   ```
+
+5. **Configure environment variables**:
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env
+   ```
+   
+   Then edit `.env` and set your API key:
+   ```bash
+   API_KEY=your-secure-api-key-here
+   ```
+   
+   **Generate a secure API key** (optional but recommended):
+   ```bash
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
    ```
 
 ### Frontend Setup
@@ -87,6 +104,19 @@ crack-safe-app-flask/
    ```bash
    npm install
    ```
+
+3. **Configure API key** (must match backend):
+   
+   Edit `client/src/environments/environment.ts` and set the API key:
+   ```typescript
+   export const environment = {
+     production: false,
+     apiUrl: 'http://localhost:5000',
+     apiKey: 'your-secure-api-key-here'  // Must match server/.env API_KEY
+   };
+   ```
+   
+   **Important:** The API key in the frontend must exactly match the `API_KEY` in your backend `.env` file.
 
 ## Running the Application
 
@@ -198,19 +228,25 @@ Health check endpoint to verify the API is running.
 ```
 
 ### POST `/api/crack_safe/`
-Crack a safe combination.
+Crack a safe combination. **Requires API Key authentication.**
+
+**Headers:**
+```
+X-API-Key: your-api-key-here
+Content-Type: application/json
+```
 
 **Request Body:**
 ```json
 {
-    "actual_combination": "08066666"
+    "actual_combination": "1234567890"
 }
 ```
 
 **Response:**
 ```json
 {
-    "attempts": 73,
+    "attempts": 55,
     "time_taken": 5.23
 }
 ```
@@ -219,7 +255,25 @@ Crack a safe combination.
 ```bash
 curl -X POST http://localhost:5000/api/crack_safe/ \
   -H "Content-Type: application/json" \
-  -d "{\"actual_combination\": \"08066666\"}"
+  -H "X-API-Key: your-api-key-here" \
+  -d "{\"actual_combination\": \"1234567890\"}"
+```
+
+**Authentication Errors:**
+
+Missing API Key (401):
+```json
+{
+    "error": "Unauthorized: API key required",
+    "message": "Please provide API key in X-API-Key header"
+}
+```
+
+Invalid API Key (401):
+```json
+{
+    "error": "Unauthorized: Invalid API key"
+}
 ```
 
 ## Running Tests
@@ -263,6 +317,11 @@ Test only the Flask endpoints:
 pytest tests/test_app.py
 ```
 
+Test only authentication:
+```bash
+pytest tests/test_authentication.py
+```
+
 ### Run Specific Test Classes or Methods
 
 Run a specific test class:
@@ -272,7 +331,7 @@ pytest tests/services/test_safe_cracker.py::TestCrackSafe
 
 Run a specific test method:
 ```bash
-pytest tests/test_app.py::TestCrackSafeEndpoint::test_crack_safe_endpoint_success
+pytest tests/test_authentication.py::TestAuthentication::test_crack_safe_with_valid_api_key
 ```
 
 ## Test Coverage
@@ -289,6 +348,14 @@ The project includes comprehensive unit tests:
   - Tests POST `/api/crack_safe/` endpoint
   - Tests error handling (missing fields, invalid JSON)
   - Tests response structures and status codes
+
+- **test_authentication.py**: Tests for API authentication (NEW)
+  - Tests API key validation
+  - Tests missing/invalid API key scenarios
+  - Tests authentication doesn't break existing functionality
+  - Tests case sensitivity and edge cases
+  - Tests multiple requests with same key
+  - 13 comprehensive test cases
 
 ## How the Algorithm Works
 
@@ -327,6 +394,67 @@ The Angular frontend includes:
 - **Error Handling**: Graceful error messages for failed requests
 - **Results Display**: Beautiful card layout showing attempts and time
 - **Responsive Design**: Works on mobile and desktop
+- **Secure API Calls**: Automatically includes API key in all requests
+
+## Security
+
+### API Key Authentication
+
+The application uses **API key authentication** which is generic and location-independent:
+
+✅ **Works from any IP address** - No IP-based restrictions  
+✅ **Works from any domain** - When properly configured  
+✅ **Works in any environment** - Development, staging, production  
+✅ **Works globally** - No geographic restrictions  
+
+#### How It Works
+
+1. **Backend Protection**: All `/api/crack_safe/` requests require a valid API key in the `X-API-Key` header
+2. **Environment-based Configuration**: API keys are stored in `.env` files (not committed to git)
+3. **Frontend Integration**: The Angular app automatically includes the API key in all API requests
+4. **CORS Control**: Origins are configurable per environment via `ALLOWED_ORIGINS`
+
+#### Production Deployment
+
+When deploying to production:
+
+1. **Generate a strong API key**:
+   ```bash
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
+   ```
+
+2. **Update backend** (`server/.env`):
+   ```bash
+   API_KEY=your-secure-production-key
+   ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+   ```
+
+3. **Update frontend** (`client/src/environments/environment.prod.ts`):
+   ```typescript
+   export const environment = {
+     production: true,
+     apiUrl: 'https://your-api-domain.com',
+     apiKey: 'your-secure-production-key'  // Same as backend
+   };
+   ```
+
+4. **Both frontend and backend must use the same API key**
+
+### Security Best Practices
+
+- **Never commit API keys**: The `.env` file is in `.gitignore`
+- **Use strong API keys**: Generate random keys with `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+- **Different keys for environments**: Use different API keys for development, testing, and production
+- **HTTPS in production**: Always use HTTPS when deploying to production
+- **CORS configuration**: Only allow requests from trusted origins
+
+### Changing API Keys
+
+To change your API key:
+
+1. **Backend**: Update `API_KEY` in `server/.env`
+2. **Frontend**: Update `apiKey` in `client/src/environments/environment.ts`
+3. **Restart both servers** for changes to take effect
 
 ### Adding New Backend Features
 

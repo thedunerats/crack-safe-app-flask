@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface CrackSafeResponse {
   attempts: number;
@@ -15,7 +16,8 @@ export interface CrackSafeRequest {
   providedIn: 'root'
 })
 export class SafeCrackerService {
-  private apiUrl = 'http://localhost:5000/api/crack_safe/';
+  private apiUrl = `${environment.apiUrl}/api/crack_safe/`;
+  private apiKey = environment.apiKey;
 
   constructor(private http: HttpClient) { }
 
@@ -23,6 +25,13 @@ export class SafeCrackerService {
     const payload: CrackSafeRequest = {
       actual_combination: combination
     };
-    return this.http.post<CrackSafeResponse>(this.apiUrl, payload);
+    
+    // Add API key to request headers
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'X-API-Key': this.apiKey
+    });
+    
+    return this.http.post<CrackSafeResponse>(this.apiUrl, payload, { headers });
   }
 }

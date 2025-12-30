@@ -1,26 +1,38 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
+import os
 from src.services.safe_cracker import crack_safe
+from src.middleware.auth import require_api_key
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+
+# Configure CORS based on environment
+# In production, you should restrict this to your actual domain
+allowed_origins = os.environ.get('ALLOWED_ORIGINS', 'http://localhost:4200').split(',')
+CORS(app, origins=allowed_origins)
 
 
 @app.route('/', methods=['GET'])
 def home():
     """
     Default GET endpoint to verify the app is running.
+    This endpoint does not require authentication.
     """
     return jsonify({
         'status': 'connected',
         'message': 'Safe Cracking API is running',
         'endpoints': {
-            'crack_safe': '/api/crack_safe/ [POST]'
+            'crack_safe': '/api/crack_safe/ [POST] - Requires API Key'
         }
     }), 200
 
 
 @app.route('/api/crack_safe/', methods=['POST'])
+@require_api_key
 def crack_safe_endpoint():
     """
     POST endpoint to crack a safe combination.
