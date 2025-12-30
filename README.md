@@ -35,8 +35,21 @@ pip install -r requirements.txt
 ```
 
 3. Run the application:
+
+**Development Mode (with debug enabled):**
+```bash
+FLASK_ENV=development python app.py
+```
+
+**Production Mode (debug disabled):**
 ```bash
 python app.py
+```
+
+Or use a production WSGI server like Gunicorn:
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
 4. Open your browser and navigate to:
@@ -155,10 +168,12 @@ crack-safe-app-flask/
 
 ## 🔒 Security Notes
 
-- The `/api/safe/reveal` endpoint should be removed in production
-- Current implementation stores game state in memory (single-user)
-- For production multi-user support, implement session management or database storage
-- Consider adding rate limiting for the attempt endpoint
+- Debug mode is disabled by default for security. Set `FLASK_ENV=development` to enable it during development.
+- The `/api/safe/reveal` endpoint should be removed in production environments.
+- Current implementation stores game state in memory (suitable for single-user/development).
+- For production multi-user support, implement session management or database storage.
+- Consider adding rate limiting for the attempt endpoint to prevent brute-force attacks.
+- For production deployment, use a production WSGI server like Gunicorn or uWSGI instead of Flask's built-in server.
 
 ## 📝 License
 

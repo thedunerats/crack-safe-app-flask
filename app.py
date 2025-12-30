@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import secrets
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -167,4 +168,6 @@ def reveal_combination():
 if __name__ == '__main__':
     # Initialize the game when the app starts
     initialize_game()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Only enable debug mode in development (set FLASK_ENV=development)
+    debug_mode = os.environ.get('FLASK_ENV') == 'development'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
