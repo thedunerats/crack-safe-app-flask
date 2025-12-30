@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
-from services.safe_cracker import crack_safe
+from flask_cors import CORS
+from src.services.safe_cracker import crack_safe
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 
 @app.route('/', methods=['GET'])

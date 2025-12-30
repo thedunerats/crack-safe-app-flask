@@ -80,37 +80,3 @@ logs/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-
-# Angular / Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
-
-# Angular build outputs
-client/dist/
-client/.angular/
-client/.sass-cache/
-client/out-tsc/
-client/bazel-out/
-
-# Angular cache
-client/.angular/cache/
-
-# IDEs - Angular specific
-client/.idea/
-client/.vscode/
-*.launch
-.settings/
-
-# Profiling
-chrome-profiler-events*.json
-
-# Angular dependencies
-client/node_modules/
-
-# Angular misc
-client/.DS_Store
-client/Thumbs.db

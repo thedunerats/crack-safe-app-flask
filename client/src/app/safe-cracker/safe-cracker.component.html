@@ -1,0 +1,93 @@
+<div class="safe-cracker-container">
+  <div class="card">
+    <h1 class="title">🔓 Safe Cracker</h1>
+    <p class="subtitle">Enter a 10-digit combination to crack the safe</p>
+
+    <form [formGroup]="safeCrackerForm" (ngSubmit)="onSubmit()" class="form">
+      <div class="form-group">
+        <label for="combination" class="form-label">
+          Safe Combination <span class="required">*</span>
+        </label>
+        <input
+          id="combination"
+          type="text"
+          formControlName="combination"
+          class="form-input"
+          placeholder="Enter 10-digit combination (e.g., 0123456789)"
+          maxlength="10"
+          [class.invalid]="combination?.invalid && combination?.touched"
+        />
+        
+        <div class="validation-messages" *ngIf="combination?.invalid && combination?.touched">
+          <p class="error-message" *ngIf="combination?.errors?.['required']">
+            ⚠️ Combination is required
+          </p>
+          <p class="error-message" *ngIf="combination?.errors?.['pattern']">
+            ⚠️ Combination must be exactly 10 digits (0-9 only)
+          </p>
+          <p class="error-message" *ngIf="combination?.errors?.['minlength'] || combination?.errors?.['maxlength']">
+            ⚠️ Combination must be exactly 10 digits
+          </p>
+        </div>
+
+        <div class="input-hint" *ngIf="!combination?.invalid">
+          ℹ️ Enter exactly 10 numeric digits
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="safeCrackerForm.invalid || isLoading"
+        >
+          <span *ngIf="!isLoading">🔓 Crack Safe</span>
+          <span *ngIf="isLoading">⏳ Cracking...</span>
+        </button>
+        
+        <button 
+          type="button" 
+          class="btn btn-secondary"
+          (click)="onReset()"
+          [disabled]="isLoading"
+        >
+          🔄 Reset
+        </button>
+      </div>
+    </form>
+
+    <!-- Error Message -->
+    <div class="alert alert-error" *ngIf="error">
+      <p>❌ {{ error }}</p>
+    </div>
+
+    <!-- Results Display -->
+    <div class="results-card" *ngIf="result">
+      <h2 class="results-title">✅ Safe Cracked Successfully!</h2>
+      
+      <div class="results-grid">
+        <div class="result-item">
+          <div class="result-label">Total Attempts</div>
+          <div class="result-value">{{ result.attempts }}</div>
+        </div>
+        
+        <div class="result-item">
+          <div class="result-label">Time Taken</div>
+          <div class="result-value">{{ result.time_taken }} ms</div>
+        </div>
+      </div>
+
+      <div class="results-info">
+        <p>
+          <strong>Efficiency:</strong> The algorithm cracked your safe in 
+          <strong>{{ result.attempts }}</strong> attempts in just 
+          <strong>{{ result.time_taken }}</strong> milliseconds!
+        </p>
+        <p class="info-text">
+          💡 Our intelligent digit-by-digit algorithm is significantly faster 
+          than brute force, which would take up to 10 billion attempts!
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
