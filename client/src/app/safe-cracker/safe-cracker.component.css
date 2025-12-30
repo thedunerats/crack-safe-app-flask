@@ -247,6 +247,21 @@
   font-size: 0.875rem;
 }
 
+.progress-bar-pulse {
+  animation: pulse-width 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-width {
+  0%, 100% {
+    width: 20%;
+    opacity: 0.8;
+  }
+  50% {
+    width: 30%;
+    opacity: 1;
+  }
+}
+
 .progress-info {
   text-align: center;
   color: #7f8c8d;
