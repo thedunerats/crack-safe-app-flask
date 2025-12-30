@@ -15,13 +15,15 @@ def count_correct_digits(attempt, actual):
     return sum(1 for i in range(len(attempt)) if i < len(actual) and attempt[i] == actual[i])
 
 
-def crack_safe(actual_combination):
+def crack_safe(actual_combination, progress_callback=None):
     """
     Attempts to crack a safe using an intelligent digit-by-digit approach.
     Uses feedback about correct digit positions to efficiently find the combination.
     
     Args:
         actual_combination (str): The actual combination to crack (e.g., '08066666')
+        progress_callback (callable, optional): Function to call with progress updates.
+            Called with dict: {'attempts': int, 'current_attempt': str, 'correct_digits': int}
     
     Returns:
         dict: A dictionary containing:
@@ -54,6 +56,13 @@ def crack_safe(actual_combination):
             # Log progress every 10 attempts
             if attempts % 10 == 0:
                 print(f"   Attempt {attempts}: Testing '{current_attempt}' → {correct_digits}/{combination_length} digits correct")
+                if progress_callback:
+                    progress_callback({
+                        'attempts': attempts,
+                        'current_attempt': current_attempt,
+                        'correct_digits': correct_digits,
+                        'total_digits': combination_length
+                    })
             
             # If this digit gives us more correct positions, it's likely the right one
             if correct_digits > best_score:
@@ -88,4 +97,41 @@ def crack_safe(actual_combination):
     return {
         'attempts': attempts,
         'time_taken': round(time_taken_ms, 2)
+    }
+
+
+def crack_safe_streaming(actual_combination):
+    """
+    Generator version of crack_safe that yields progress updates.
+    Yields progress every 10 attempts and final result at the end.
+    
+    Args:
+        actual_combination (str): The actual combination to crack
+    
+    Yields:
+        dict: Progress updates with 'type': 'progress' or 'complete'
+    """
+    progress_data = []
+    
+    def progress_callback(data):
+        progress_data.append(data)
+    
+    # Run the cracking algorithm with progress callback
+    result = crack_safe(actual_combination, progress_callback=progress_callback)
+    
+    # Yield all progress updates
+    for progress in progress_data:
+        yield {
+            'type': 'progress',
+            'attempts': progress['attempts'],
+            'current_attempt': progress['current_attempt'],
+            'correct_digits': progress['correct_digits'],
+            'total_digits': progress['total_digits']
+        }
+    
+    # Yield final result
+    yield {
+        'type': 'complete',
+        'attempts': result['attempts'],
+        'time_taken': result['time_taken']
     }

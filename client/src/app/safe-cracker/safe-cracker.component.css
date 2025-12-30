@@ -141,6 +141,123 @@
   color: #c33;
 }
 
+.progress-card {
+  margin-top: 30px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f093fb15 0%, #f5576c15 100%);
+  border-radius: 12px;
+  border: 2px solid #f093fb;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    border-color: #f093fb;
+  }
+  50% {
+    border-color: #f5576c;
+  }
+}
+
+.progress-title {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.progress-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.progress-item {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  color: #7f8c8d;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.progress-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #f5576c;
+  font-family: 'Courier New', monospace;
+}
+
+.attempts-counter {
+  animation: count-up 0.3s ease;
+}
+
+@keyframes count-up {
+  0% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.combination-display {
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 24px;
+  background: #ecf0f1;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.progress-info {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-top: 12px;
+}
+
+.progress-info p {
+  margin: 0;
+}
+
 .results-card {
   margin-top: 30px;
   padding: 24px;
@@ -215,6 +332,10 @@
   }
   
   .results-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .progress-stats {
     grid-template-columns: 1fr;
   }
   

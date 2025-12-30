@@ -61,6 +61,41 @@
       <p>❌ {{ error }}</p>
     </div>
 
+    <!-- Real-time Progress Display -->
+    <div class="progress-card" *ngIf="isLoading && currentProgress">
+      <h2 class="progress-title">🔍 Cracking in Progress...</h2>
+      
+      <div class="progress-stats">
+        <div class="progress-item">
+          <div class="progress-label">Current Attempts</div>
+          <div class="progress-value attempts-counter">{{ currentAttempts }}</div>
+        </div>
+        
+        <div class="progress-item">
+          <div class="progress-label">Testing Combination</div>
+          <div class="progress-value combination-display">{{ currentProgress.current_attempt }}</div>
+        </div>
+        
+        <div class="progress-item">
+          <div class="progress-label">Correct Digits</div>
+          <div class="progress-value">
+            {{ currentProgress.correct_digits }} / {{ currentProgress.total_digits }}
+          </div>
+        </div>
+      </div>
+      
+      <div class="progress-bar-container">
+        <div 
+          class="progress-bar" 
+          [style.width.%]="(currentProgress.correct_digits / currentProgress.total_digits) * 100"
+        ></div>
+      </div>
+      
+      <div class="progress-info">
+        <p>⚡ Real-time updates every 10 attempts</p>
+      </div>
+    </div>
+
     <!-- Results Display -->
     <div class="results-card" *ngIf="result">
       <h2 class="results-title">✅ Safe Cracked Successfully!</h2>

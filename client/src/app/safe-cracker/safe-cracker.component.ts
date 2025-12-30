@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { SafeCrackerService, CrackSafeResponse } from '../services/safe-cracker.service';
+import { SafeCrackerService, CrackSafeResponse, ProgressUpdate } from '../services/safe-cracker.service';
 
 @Component({
   selector: 'app-safe-cracker',
@@ -15,6 +15,10 @@ export class SafeCrackerComponent {
   result: CrackSafeResponse | null = null;
   isLoading = false;
   error: string | null = null;
+  
+  // Real-time progress tracking
+  currentAttempts = 0;
+  currentProgress: ProgressUpdate | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -39,19 +43,32 @@ export class SafeCrackerComponent {
       this.isLoading = true;
       this.error = null;
       this.result = null;
+      this.currentAttempts = 0;
+      this.currentProgress = null;
 
       const combinationValue = this.safeCrackerForm.value.combination;
 
-      this.safeCrackerService.crackSafe(combinationValue).subscribe({
-        next: (response) => {
-          this.result = response;
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.error = 'Failed to crack safe. Please try again.';
-          console.error('Error:', err);
-          this.isLoading = false;
+      // Use streaming endpoint for real-time progress
+      this.safeCrackerService.crackSafeWithProgress(
+        combinationValue,
+        (progress: ProgressUpdate) => {
+          // Update progress in real-time
+          this.currentAttempts = progress.attempts;
+          this.currentProgress = progress;
         }
+      ).then((finalResult) => {
+        // Set final result
+        this.result = {
+          attempts: finalResult.attempts,
+          time_taken: finalResult.time_taken
+        };
+        this.isLoading = false;
+        this.currentProgress = null;
+      }).catch((err) => {
+        this.error = 'Failed to crack safe. Please try again.';
+        console.error('Error:', err);
+        this.isLoading = false;
+        this.currentProgress = null;
       });
     }
   }
@@ -60,5 +77,7 @@ export class SafeCrackerComponent {
     this.safeCrackerForm.reset();
     this.result = null;
     this.error = null;
+    this.currentAttempts = 0;
+    this.currentProgress = null;
   }
 }

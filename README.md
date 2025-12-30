@@ -30,10 +30,13 @@ crack-safe-app-flask/
 ## Features
 
 - **Intelligent Cracking Algorithm**: Cracks safes digit-by-digit instead of brute force
+- **Real-time Progress Updates**: Watch the cracking process live with attempt counter
 - **Progress Logging**: Logs attempts and correct digit counts during cracking
 - **REST API**: Simple POST endpoint to crack safe combinations
+- **Streaming Endpoint**: Real-time progress updates every 10 attempts via NDJSON streaming
 - **Fast Performance**: Maximum ~100 attempts for 10-digit combinations
 - **Angular Frontend**: Modern, responsive UI with form validation
+- **Live Counter Display**: See current attempts, testing combination, and progress bar
 - **Real-time Results**: Displays cracking attempts and time taken
 - **CORS Enabled**: Frontend and backend communicate seamlessly
 - **API Authentication**: Secure API key authentication to protect endpoints
@@ -180,10 +183,14 @@ crack-safe-app-flask/
 
 1. Enter a 10-digit combination in the input field (e.g., `1234567890`)
 2. Click "🔓 Crack Safe" to submit
-3. View the results showing:
-   - Number of attempts needed
+3. **Watch real-time progress** as the safe is being cracked:
+   - Current attempt counter updates every 10 attempts
+   - See the combination being tested
+   - Progress bar shows how many digits are correct
+4. View the final results showing:
+   - Total number of attempts needed
    - Time taken in milliseconds
-4. Click "🔄 Reset" to try another combination
+5. Click "🔄 Reset" to try another combination
 
 ### Troubleshooting
 
@@ -222,7 +229,8 @@ Health check endpoint to verify the API is running.
     "status": "connected",
     "message": "Safe Cracking API is running",
     "endpoints": {
-        "crack_safe": "/api/crack_safe/ [POST]"
+        "crack_safe": "/api/crack_safe/ [POST] - Requires API Key",
+        "crack_safe_stream": "/api/crack_safe/stream [POST] - Requires API Key (Real-time updates)"
     }
 }
 ```
@@ -259,6 +267,77 @@ curl -X POST http://localhost:5000/api/crack_safe/ \
   -d "{\"actual_combination\": \"1234567890\"}"
 ```
 
+### POST `/api/crack_safe/stream` ✨ NEW
+Crack a safe combination with **real-time progress updates**. **Requires API Key authentication.**
+
+Returns a stream of newline-delimited JSON (NDJSON) with progress updates every 10 attempts.
+
+**Headers:**
+```
+X-API-Key: your-api-key-here
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+    "actual_combination": "1234567890"
+}
+```
+
+**Response Stream (NDJSON):**
+```json
+{"type": "progress", "attempts": 10, "current_attempt": "1000000000", "correct_digits": 1, "total_digits": 10}
+{"type": "progress", "attempts": 20, "current_attempt": "1200000000", "correct_digits": 2, "total_digits": 10}
+{"type": "progress", "attempts": 30, "current_attempt": "1230000000", "correct_digits": 3, "total_digits": 10}
+...
+{"type": "complete", "attempts": 55, "time_taken": 5.23}
+```
+
+**Progress Update Format:**
+- `type`: Always "progress" for intermediate updates
+- `attempts`: Current number of attempts made
+- `current_attempt`: The combination currently being tested
+- `correct_digits`: How many digits are correct in current position
+- `total_digits`: Total digits in the combination (always 10)
+
+**Complete Update Format:**
+- `type`: Always "complete" for final result
+- `attempts`: Total attempts needed to crack the safe
+- `time_taken`: Time taken in milliseconds
+
+**Example using curl:**
+```bash
+curl -X POST http://localhost:5000/api/crack_safe/stream \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key-here" \
+  -d "{\"actual_combination\": \"1234567890\"}" \
+  --no-buffer
+```
+
+**Example using Python:**
+```python
+import requests
+import json
+
+url = "http://localhost:5000/api/crack_safe/stream"
+headers = {
+    "Content-Type": "application/json",
+    "X-API-Key": "your-api-key-here"
+}
+data = {"actual_combination": "1234567890"}
+
+response = requests.post(url, json=data, headers=headers, stream=True)
+
+for line in response.iter_lines():
+    if line:
+        update = json.loads(line)
+        if update['type'] == 'progress':
+            print(f"Progress: {update['attempts']} attempts, {update['correct_digits']}/{update['total_digits']} correct")
+        elif update['type'] == 'complete':
+            print(f"Complete! {update['attempts']} total attempts in {update['time_taken']}ms")
+```
+
 **Authentication Errors:**
 
 Missing API Key (401):
@@ -278,26 +357,35 @@ Invalid API Key (401):
 
 ## Running Tests
 
+The project includes comprehensive test suites for both backend (Python/pytest) and frontend (Angular/Jasmine).
+
+**Test Summary:**
+- ✅ **Backend**: 39 Python tests (Flask endpoints, authentication, safe cracker logic, streaming)
+- ✅ **Frontend**: 40 Angular tests (service, component, form validation, progress tracking)
+- ✅ **Total**: 79 comprehensive unit tests
+
+### Backend Tests (Python/pytest)
+
 All test commands should be run from the `server/` directory.
 
-### Install Test Dependencies
+#### Install Test Dependencies
 
 Test dependencies are included in `requirements.txt`. If you've already run `pip install -r requirements.txt`, you're all set!
 
-### Run All Tests
+#### Run All Backend Tests
 
 ```bash
 cd server
 pytest
 ```
 
-### Run Tests with Verbose Output
+#### Run Tests with Verbose Output
 
 ```bash
 pytest -v
 ```
 
-### Run Tests with Coverage Report
+#### Run Tests with Coverage Report
 
 ```bash
 pytest --cov=src --cov-report=term-missing
@@ -305,7 +393,7 @@ pytest --cov=src --cov-report=term-missing
 
 This will show which lines of code are covered by tests.
 
-### Run Specific Test Files
+#### Run Specific Test Files
 
 Test only the safe cracker logic:
 ```bash
@@ -322,7 +410,12 @@ Test only authentication:
 pytest tests/test_authentication.py
 ```
 
-### Run Specific Test Classes or Methods
+Test only streaming functionality:
+```bash
+pytest tests/test_streaming.py
+```
+
+#### Run Specific Test Classes or Methods
 
 Run a specific test class:
 ```bash
@@ -349,13 +442,69 @@ The project includes comprehensive unit tests:
   - Tests error handling (missing fields, invalid JSON)
   - Tests response structures and status codes
 
-- **test_authentication.py**: Tests for API authentication (NEW)
+- **test_authentication.py**: Tests for API authentication
   - Tests API key validation
   - Tests missing/invalid API key scenarios
   - Tests authentication doesn't break existing functionality
   - Tests case sensitivity and edge cases
   - Tests multiple requests with same key
   - 13 comprehensive test cases
+
+- **test_streaming.py**: Tests for real-time streaming functionality ✨ NEW
+  - Tests `crack_safe_streaming()` generator function
+  - Tests streaming endpoint returns NDJSON format
+  - Tests progress updates occur every 10 attempts
+  - Tests authentication on streaming endpoint
+  - Tests streaming with various combinations
+  - Tests progress shows increasing attempts
+  - Tests streaming final result matches regular endpoint
+  - 10 comprehensive streaming test cases
+
+### Frontend Tests (Angular/Jasmine)
+
+The Angular client includes unit tests for services and components:
+
+- **safe-cracker.service.spec.ts**: Tests for the SafeCrackerService
+  - Tests HTTP requests to backend API
+  - Tests API key inclusion in headers
+  - Tests error handling
+  - Tests streaming functionality with progress callbacks
+  - Tests NDJSON parsing
+  - 12 comprehensive service tests
+
+- **safe-cracker.component.spec.ts**: Tests for the SafeCrackerComponent
+  - Tests form validation (10 digits, numeric only)
+  - Tests form submission with valid/invalid data
+  - Tests loading states
+  - Tests progress tracking during cracking
+  - Tests reset functionality
+  - Tests UI state management
+  - 25+ comprehensive component tests
+
+### Run Frontend Tests
+
+Navigate to the client directory and run:
+
+```bash
+cd client
+
+# Run tests once
+ng test --watch=false --browsers=ChromeHeadless
+
+# Run tests in watch mode (for development)
+ng test
+
+# Run tests with code coverage
+ng test --code-coverage --watch=false --browsers=ChromeHeadless
+```
+
+**View Coverage Report:**
+After running with `--code-coverage`, open `client/coverage/index.html` in your browser to see detailed coverage reports.
+
+**Test Results:**
+- Service Tests: 12 tests covering API communication and streaming
+- Component Tests: 25+ tests covering form validation, submission, and UI state
+- Total Frontend Tests: 37+ comprehensive unit tests
 
 ## How the Algorithm Works
 
