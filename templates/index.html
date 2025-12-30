@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safe Cracking App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .safe-container {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .status-badge.locked {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .status-badge.unlocked {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .attempts {
+            color: #ecf0f1;
+            font-size: 1.1em;
+        }
+
+        .combination-input {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .digit-input {
+            width: 70px;
+            height: 70px;
+            font-size: 2em;
+            text-align: center;
+            border: 3px solid #3498db;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .digit-input:focus {
+            outline: none;
+            border-color: #2ecc71;
+            transform: scale(1.1);
+        }
+
+        .digit-input.correct {
+            background-color: #2ecc71;
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .digit-input.present {
+            background-color: #f39c12;
+            color: white;
+            border-color: #e67e22;
+        }
+
+        .digit-input.absent {
+            background-color: #95a5a6;
+            color: white;
+            border-color: #7f8c8d;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+
+        .feedback-history {
+            margin-top: 20px;
+        }
+
+        .feedback-history h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .attempt-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .attempt-digit {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .instructions {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Safe Cracking</h1>
+        <p class="subtitle">Can you crack the code?</p>
+
+        <div class="safe-container">
+            <div class="status">
+                <div id="status-badge" class="status-badge locked">🔒 LOCKED</div>
+                <div id="attempts" class="attempts">Attempts remaining: 5/5</div>
+            </div>
+
+            <div class="combination-input">
+                <input type="number" class="digit-input" id="digit0" min="0" max="9">
+                <input type="number" class="digit-input" id="digit1" min="0" max="9">
+                <input type="number" class="digit-input" id="digit2" min="0" max="9">
+                <input type="number" class="digit-input" id="digit3" min="0" max="9">
+            </div>
+
+            <div class="buttons">
+                <button class="btn-primary" id="submit-btn" onclick="submitAttempt()">Try Combination</button>
+                <button class="btn-secondary" id="reset-btn" onclick="resetSafe()">Reset Safe</button>
+            </div>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div class="feedback-history" id="history" style="display: none;">
+            <h3>Previous Attempts:</h3>
+            <div id="history-content"></div>
+        </div>
+
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <ul>
+                <li><strong>Green (Correct):</strong> The digit is correct and in the right position</li>
+                <li><strong>Orange (Present):</strong> The digit is in the combination but in the wrong position</li>
+                <li><strong>Gray (Absent):</strong> The digit is not in the combination</li>
+                <li>You have 5 attempts to crack the safe!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            isLocked: true,
+            attemptsRemaining: 5,
+            maxAttempts: 5,
+            history: []
+        };
+
+        // Auto-focus next input
+        document.querySelectorAll('.digit-input').forEach((input, index) => {
+            input.addEventListener('input', function(e) {
+                // Ensure only one digit
+                if (this.value.length > 1) {
+                    this.value = this.value.slice(0, 1);
+                }
+                
+                // Move to next input
+                if (this.value.length === 1 && index < 3) {
+                    document.getElementById(`digit${index + 1}`).focus();
+                }
+            });
+
+            input.addEventListener('keydown', function(e) {
+                // Move to previous input on backspace
+                if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                    document.getElementById(`digit${index - 1}`).focus();
+                }
+            });
+        });
+
+        // Initialize the game
+        async function initGame() {
+            try {
+                const response = await fetch('/api/safe');
+                const data = await response.json();
+                updateGameState(data);
+            } catch (error) {
+                showMessage('Error connecting to server', 'error');
+            }
+        }
+
+        function updateGameState(data) {
+            gameState.isLocked = data.is_locked;
+            gameState.attemptsRemaining = data.attempts_remaining;
+            gameState.maxAttempts = data.max_attempts;
+
+            const statusBadge = document.getElementById('status-badge');
+            const attemptsDiv = document.getElementById('attempts');
+
+            if (gameState.isLocked) {
+                statusBadge.textContent = '🔒 LOCKED';
+                statusBadge.className = 'status-badge locked';
+            } else {
+                statusBadge.textContent = '🔓 UNLOCKED';
+                statusBadge.className = 'status-badge unlocked';
+            }
+
+            attemptsDiv.textContent = `Attempts remaining: ${gameState.attemptsRemaining}/${gameState.maxAttempts}`;
+        }
+
+        function getCombination() {
+            const combination = [];
+            for (let i = 0; i < 4; i++) {
+                const input = document.getElementById(`digit${i}`);
+                const value = parseInt(input.value);
+                if (isNaN(value) || value < 0 || value > 9) {
+                    return null;
+                }
+                combination.push(value);
+            }
+            return combination;
+        }
+
+        function clearInputs() {
+            for (let i = 0; i < 4; i++) {
+                const input = document.getElementById(`digit${i}`);
+                input.value = '';
+                input.className = 'digit-input';
+            }
+            document.getElementById('digit0').focus();
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function addToHistory(attempt, feedback) {
+            gameState.history.push({ attempt, feedback });
+            
+            const historyDiv = document.getElementById('history');
+            const historyContent = document.getElementById('history-content');
+            
+            historyDiv.style.display = 'block';
+            
+            const row = document.createElement('div');
+            row.className = 'attempt-row';
+            
+            feedback.forEach(item => {
+                const digitDiv = document.createElement('div');
+                digitDiv.className = `attempt-digit ${item.status}`;
+                digitDiv.textContent = item.digit;
+                row.appendChild(digitDiv);
+            });
+            
+            historyContent.insertBefore(row, historyContent.firstChild);
+        }
+
+        async function submitAttempt() {
+            if (!gameState.isLocked) {
+                showMessage('Safe is already unlocked!', 'info');
+                return;
+            }
+
+            const combination = getCombination();
+            if (!combination) {
+                showMessage('Please enter all 4 digits (0-9)', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/safe/attempt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ combination })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showMessage(data.message, 'error');
+                    return;
+                }
+
+                if (data.unlocked) {
+                    showMessage(data.message, 'success');
+                    gameState.isLocked = false;
+                    updateGameState({
+                        is_locked: false,
+                        attempts_remaining: data.attempts_remaining,
+                        max_attempts: gameState.maxAttempts
+                    });
+                    
+                    // Show feedback with all correct
+                    for (let i = 0; i < 4; i++) {
+                        document.getElementById(`digit${i}`).className = 'digit-input correct';
+                    }
+                } else {
+                    showMessage(data.message, 'info');
+                    gameState.attemptsRemaining = data.attempts_remaining;
+                    updateGameState({
+                        is_locked: true,
+                        attempts_remaining: data.attempts_remaining,
+                        max_attempts: gameState.maxAttempts
+                    });
+
+                    // Show feedback
+                    if (data.feedback) {
+                        data.feedback.forEach((item, index) => {
+                            document.getElementById(`digit${index}`).className = `digit-input ${item.status}`;
+                        });
+                        addToHistory(combination, data.feedback);
+                    }
+
+                    if (data.game_over) {
+                        showMessage('Game Over! No attempts remaining. Please reset the safe.', 'error');
+                    }
+                }
+            } catch (error) {
+                showMessage('Error submitting attempt', 'error');
+            }
+        }
+
+        async function resetSafe() {
+            try {
+                const response = await fetch('/api/safe/reset', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    gameState.isLocked = true;
+                    gameState.attemptsRemaining = data.attempts_remaining;
+                    gameState.history = [];
+                    
+                    updateGameState({
+                        is_locked: true,
+                        attempts_remaining: data.attempts_remaining,
+                        max_attempts: gameState.maxAttempts
+                    });
+                    
+                    clearInputs();
+                    document.getElementById('history').style.display = 'none';
+                    document.getElementById('history-content').innerHTML = '';
+                }
+            } catch (error) {
+                showMessage('Error resetting safe', 'error');
+            }
+        }
+
+        // Allow Enter key to submit
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitAttempt();
+            }
+        });
+
+        // Initialize the game on page load
+        initGame();
+    </script>
+</body>
+</html>
